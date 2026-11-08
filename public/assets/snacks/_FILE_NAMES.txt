@@ -1,0 +1,18 @@
+Snack photos — landscape 4:3 (e.g. 800x600). Save as:
+
+c1.jpg    ← Date Night Combo
+c2.jpg    ← Solo Combo
+c3.jpg    ← Family Feast
+p1.jpg    ← Salted Popcorn
+p2.jpg    ← Caramel Popcorn
+p3.jpg    ← Cheese Popcorn
+s1.jpg    ← Loaded Nachos
+s2.jpg    ← Veg Puff
+s3.jpg    ← Samosa (2 pcs)
+s4.jpg    ← Chicken Burger
+s5.jpg    ← Chicken Hot Dog
+s6.jpg    ← Margherita Pizza
+b1.jpg    ← Coke
+b2.jpg    ← Cold Coffee
+b3.jpg    ← Masala Chai
+b4.jpg    ← Mineral Water

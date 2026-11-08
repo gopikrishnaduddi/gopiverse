@@ -1,0 +1,19 @@
+Trailers — MP4 (H.264 video + AAC audio), 1080p or 720p, ideally under 30 MB each.
+Plays full-screen on the movie page and on the 3D cinema screen. Save as:
+
+vikram.mp4    ← Vikram
+leo.mp4    ← Leo
+coolie.mp4    ← Coolie
+varanasi.mp4    ← Varanasi
+toxic.mp4    ← Toxic
+jailer2.mp4    ← Jailer 2
+ramayana.mp4    ← Ramayana
+war2.mp4    ← War 2
+animal.mp4    ← Animal
+kantara.mp4    ← Kantara Chapter 1
+pushpa2.mp4    ← Pushpa 2
+empuraan.mp4    ← L2: Empuraan
+kalki.mp4    ← Kalki 2898 AD
+manjummel.mp4    ← Manjummel Boys
+stree2.mp4    ← Stree 2
+kgf2.mp4    ← KGF Chapter 2

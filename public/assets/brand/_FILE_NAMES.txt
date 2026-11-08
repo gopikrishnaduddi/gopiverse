@@ -1,0 +1,1 @@
+favicon.png — browser tab icon (64x64 or larger, square).
