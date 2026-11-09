@@ -3,6 +3,7 @@ let ctx = null, nodes = null
 export const drone = {
   get on() { return !!nodes },
   start() {
+    if (nodes) return
     try {
       ctx = ctx || new (window.AudioContext || window.webkitAudioContext)(); ctx.resume()
       const g = ctx.createGain(); g.gain.value = 0; g.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 1.5)

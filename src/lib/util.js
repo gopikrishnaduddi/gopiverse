@@ -30,3 +30,16 @@ export function getShows(m, city, day, lang = m.lang) {
   }).filter(Boolean).sort((a, b) => a.dist - b.dist)
 }
 export const showKey = (b) => [b.movieId, b.city, b.day, b.theatre, b.time].join('|')
+
+// "07:20 PM" → 19
+export const hourOf = (t) => (+t.slice(0, 2) % 12) + (t.includes('PM') ? 12 : 0)
+// time-of-day bucket for showtime filters
+export const todOf = (h) => (h < 12 ? 'morning' : h < 16 ? 'afternoon' : h < 20 ? 'evening' : 'night')
+// exact show start (ms) from day index + "hh:mm AM"
+export function showTime(day, time) { const d = dayInfo(day).d; d.setHours(hourOf(time), +time.slice(3, 5), 0, 0); return d.getTime() }
+// "2h 15m" until a moment, or null if it has passed
+export function until(ms) {
+  const diff = ms - Date.now(); if (!ms || diff <= 0) return null
+  const h = Math.floor(diff / 3.6e6), mi = Math.floor((diff % 3.6e6) / 6e4), d = Math.floor(h / 24)
+  return d > 0 ? `${d}d ${h % 24}h` : h > 0 ? `${h}h ${mi}m` : `${mi}m`
+}

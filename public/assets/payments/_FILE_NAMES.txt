@@ -1,0 +1,13 @@
+Payment logos — square, transparent PNG works best (e.g. 128x128). Save as:
+
+upi.png         ← UPI
+card.png        ← Credit / Debit card
+netbanking.png  ← Net banking
+wallet.png      ← Wallets
+
+.jpg, .jpeg, .webp and .png all work.
+No file? The emoji from src/data/payments.js is shown instead.
+
+Prefer a web link instead of a file? Open src/data/payments.js and paste the
+link between the quotes of logo: '' for that payment method, for example:
+  logo: 'https://example.com/upi-logo.png',

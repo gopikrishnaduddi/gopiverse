@@ -1,15 +1,16 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import Nav from './components/Nav'
+import BottomNav from './components/BottomNav'
+import Intro from './components/Intro'
 import { Modal, Toast } from './components/Overlays'
 import Home from './pages/Home'
 import Movies from './pages/Movies'
 import Events from './pages/Events'
 import MoviePage from './pages/MoviePage'
-import Seats from './pages/Seats'
 import Snacks from './pages/Snacks'
 import Review from './pages/Review'
 import Pay from './pages/Pay'
@@ -17,12 +18,15 @@ import Ticket from './pages/Ticket'
 import MyTickets from './pages/MyTickets'
 
 gsap.registerPlugin(ScrollTrigger)
+// the 3D hall is big, so it loads only when someone opens it
+const Seats = lazy(() => import('./pages/Seats'))
+const HallLoading = () => <div className="hall-load"><div className="spin" /><b>Opening the hall…</b><small>Setting up seats, screen and lights</small></div>
 
 export default function App() {
   const loc = useLocation()
   const main = useRef()
   const lenis = useRef()
-  const isHall = loc.pathname.startsWith('/book/seats')
+  const isHall = loc.pathname.startsWith('/book/seats') || /^\/ticket\/[^/]+\/seat$/.test(loc.pathname)
 
   // Lenis smooth scroll (off in the 3D hall)
   useEffect(() => {
@@ -49,6 +53,7 @@ export default function App() {
     <>
       {!isHall && <Nav />}
       <main ref={main}>
+        <Suspense fallback={<HallLoading />}>
         <Routes location={loc}>
           <Route path="/" element={<Home />} />
           <Route path="/movies" element={<Movies />} />
@@ -61,12 +66,16 @@ export default function App() {
           <Route path="/book/review" element={<Review />} />
           <Route path="/book/pay" element={<Pay />} />
           <Route path="/ticket/:id" element={<Ticket />} />
+          <Route path="/ticket/:id/seat" element={<Seats viewOnly />} />
           <Route path="/tickets" element={<MyTickets />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </main>
+      {!isHall && <BottomNav />}
       <Modal />
       <Toast />
+      <Intro />
     </>
   )
 }

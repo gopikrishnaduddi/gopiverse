@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import gsap from 'gsap'
 import { MOVIES, BY_ID, FEATURED, LANGS } from '../data/movies'
 import { EVENTS } from '../data/events'
-import { useStore } from '../store/useStore'
+import { useStore, toast } from '../store/useStore'
+import { OFFERS } from '../data/offers'
 import { MovieCard, EventCard, Footer, Poster } from '../components/Cards'
 import { useReveal } from '../components/useReveal'
 import { mixHex, rng } from '../lib/posterArt'
@@ -37,7 +38,7 @@ function Hero() {
   return (
     <div className="hero">
       <canvas className="stars" ref={stars} /><div className="planet" /><div className="beam" />
-      <div className="hero-title"><h1>CINE<span>VERSE</span></h1><p>DRAG TO EXPLORE · TAP A SCREEN TO BOOK</p></div>
+      <div className="hero-title"><h1>GOPI<span>VERSE</span></h1><p>DRAG TO EXPLORE · TAP A SCREEN TO BOOK</p></div>
       <div className="r3f-stage" ref={stage}>
         <Suspense fallback={null}><HeroRing movies={movies} state={ring.state} onTick={ring.onTick} onPick={pick} mobile={mobile} /></Suspense>
       </div>
@@ -100,6 +101,25 @@ function NowShowing() {
   )
 }
 
+// seats still on hold from an unfinished booking → one tap to continue
+function Resume() {
+  const b = useStore((s) => s.booking), nav = useNavigate()
+  const [, tick] = useState(0)
+  useEffect(() => { const i = setInterval(() => tick((n) => n + 1), 1000); return () => clearInterval(i) }, [])
+  if (!b || b.kind !== 'movie' || !b.holdUntil || !b.seats?.length) return null
+  const left = b.holdUntil - Date.now(); if (left <= 0) return null
+  const m = BY_ID[b.movieId]; if (!m) return null
+  return <div className="wrap"><div className="resume"><Poster m={m} />
+    <div><small>Seats on hold · {Math.floor(left / 60000)}:{String(Math.floor((left % 60000) / 1000)).padStart(2, '0')} left</small><b>{m.title}</b><p>{b.theatre} · {b.dateLabel} · {b.time} · {b.seats.map((x) => x.label).join(', ')}</p></div>
+    <button className="btn btn-y btn-pill" onClick={() => nav('/book/snacks')}>Continue booking →</button></div></div>
+}
+function Offers() {
+  const copy = async (c) => { try { await navigator.clipboard.writeText(c) } catch (e) { /* clipboard blocked */ } toast('✓ ' + c + ' copied — apply it at checkout') }
+  return <section className="sec" style={{ paddingTop: 10 }}><div className="wrap"><div className="sec-h reveal"><div><h3>Offers for you</h3><p>Apply these codes on the review page before you pay</p></div></div>
+    <div className="offers-row reveal" data-lenis-prevent-horizontal>{OFFERS.map((o) => <div className="ocard" key={o.code}><span className="oi">{o.icon}</span><div><b>{o.title}</b><p>{o.desc}</p></div>
+      <button className="ocode" onClick={() => copy(o.code)} aria-label={'Copy code ' + o.code}><span className="mono">{o.code}</span><em>Copy</em></button></div>)}</div></div></section>
+}
+
 export default function Home() {
   const root = useRef()
   useReveal(root)
@@ -107,7 +127,9 @@ export default function Home() {
   return (
     <div ref={root}>
       <Hero />
+      <Resume />
       <NowShowing />
+      <Offers />
       <section className="sec" style={{ paddingTop: 20 }}><div className="wrap"><div className="sec-h reveal"><div><h3>Coming soon · Pre-book now</h3><p>Lock your seats for opening day</p></div></div>
         <div className="hscroll reveal" data-lenis-prevent-horizontal>{soon.map((m) => <MovieCard key={m.id} m={m} />)}</div></div></section>
       <section className="sec" style={{ paddingTop: 10 }}><div className="wrap"><div className="sec-h reveal"><div><h3>Live events near you</h3><p>Concerts, comedy, theatre and matchdays</p></div><Link className="see" to="/events">Explore ›</Link></div>

@@ -4,6 +4,7 @@
   • every 5.2 s it rotates to the next screen (progress bar in the hero card)
   • front screen glows; side screens get darker by angle
   • click a side screen → rotate it to the front, click the front screen → open the movie
+  • the camera follows the mouse a little (parallax) and a hovered screen lifts towards you
 */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
@@ -46,15 +47,18 @@ export function usePosterTexture(m) {
 }
 
 function Screen({ m, i, state, onPick }) {
-  const g = useRef(), refl = useRef(), mat = useRef(), frame = useRef(), glow = useRef(), label = useRef()
+  const g = useRef(), refl = useRef(), mat = useRef(), frame = useRef(), glow = useRef(), label = useRef(), hov = useRef(false), lift = useRef(0)
   const tex = usePosterTexture(m)
-  useFrame(() => {
+  useFrame(({ clock }) => {
     const N = state.n
     let r = i - state.pos; r = ((r % N) + N) % N; if (r > N / 2) r -= N
     const a = r * STEP, vis = Math.abs(a) < 1.45
     g.current.visible = vis; if (!vis) return
-    g.current.position.set(R * Math.sin(a), 0, -C - R * Math.cos(a))
+    lift.current += ((hov.current && !state.drag ? 1 : 0) - lift.current) * 0.12
+    const L = lift.current, bob = Math.sin(clock.elapsedTime * 0.9 + i * 1.7) * 0.012
+    g.current.position.set(R * Math.sin(a) * (1 - L * 0.05), bob + L * 0.03, -C - R * Math.cos(a) * (1 - L * 0.05))
     g.current.rotation.y = -a
+    g.current.scale.setScalar(1 + L * 0.04)
     const b = Math.max(0.32, 1 - Math.abs(r) * 0.14)
     mat.current.color.setScalar(b); refl.current.material.color.setScalar(b)
     const f = Math.max(0, 1 - Math.abs(r) * 2)
@@ -65,7 +69,7 @@ function Screen({ m, i, state, onPick }) {
     <group ref={g}>
       <mesh ref={glow} position={[0, 0, -0.02]}><planeGeometry args={[CARD_W * 1.6, CARD_H * 1.35]} /><meshBasicMaterial map={GLOW} transparent depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} /></mesh>
       <mesh ref={frame} position={[0, 0, -0.01]}><planeGeometry args={[CARD_W + 0.05, CARD_H + 0.05]} /><meshBasicMaterial color="#f7b928" transparent toneMapped={false} /></mesh>
-      <mesh onClick={(e) => { e.stopPropagation(); if (e.delta < 6) onPick(i) }} onPointerOver={() => (document.body.style.cursor = 'pointer')} onPointerOut={() => (document.body.style.cursor = '')}>
+      <mesh onClick={(e) => { e.stopPropagation(); if (e.delta < 6) onPick(i) }} onPointerOver={() => { hov.current = true; document.body.style.cursor = 'pointer' }} onPointerOut={() => { hov.current = false; document.body.style.cursor = '' }}>
         <planeGeometry args={[CARD_W, CARD_H]} /><meshBasicMaterial ref={mat} map={tex} toneMapped={false} />
       </mesh>
       <mesh ref={refl} position={[0, -CARD_H - 0.03, 0]} scale={[1, -1, 1]}>
@@ -90,11 +94,16 @@ const GLOW = (() => {
 
 function Rig({ state, onTick }) {
   const { camera, size } = useThree()
-  useEffect(() => {
-    const mob = size.width < 820
-    camera.fov = mob ? 66 : 54; camera.position.set(0, 0.1, 0); camera.lookAt(0, -0.02, -5); camera.updateProjectionMatrix()
-  }, [size.width])
-  useFrame((_, dt) => onTick(dt))
+  const mob = size.width < 820, look = useMemo(() => new THREE.Vector3(0, -0.02, -5), [])
+  useEffect(() => { camera.fov = mob ? 66 : 54; camera.position.set(0, 0.1, 0); camera.lookAt(look); camera.updateProjectionMatrix() }, [size.width])
+  useFrame(({ pointer }, dt) => {
+    onTick(dt)
+    if (mob) return
+    // gentle parallax towards the mouse (stays still while dragging)
+    const tx = state.drag ? camera.position.x : pointer.x * 0.22, ty = state.drag ? camera.position.y : 0.1 + pointer.y * 0.08
+    camera.position.x += (tx - camera.position.x) * 0.05; camera.position.y += (ty - camera.position.y) * 0.05
+    camera.lookAt(look)
+  })
   return null
 }
 
